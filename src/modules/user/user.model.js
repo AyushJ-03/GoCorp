@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 const userSchema = new mongoose.Schema(
   {
@@ -26,6 +28,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    password: {
+      type: String,
+      required: true,
+      select: false
+    },
+    socketId: {
+      type: String
+    },
     contact: {
       type: String,
       required: true,
@@ -47,5 +57,19 @@ const userSchema = new mongoose.Schema(
     timestamps: true
   }
 );
+
+userSchema.methods.generateAuthToken = function() {
+  const token = jwt.sign({ _id: this._id }, process.env.JWT_SECRET);
+  return token;
+};
+
+userSchema.methods.comparePassword = function(password) {
+  return bcrypt.compare(password, this.password);
+}
+
+userSchema.statics.hashPassword = async function(password) {
+  const salt = await bcrypt.genSalt(10);
+  return await bcrypt.hash(password, salt);
+}
 
 export const User = mongoose.model("User", userSchema);

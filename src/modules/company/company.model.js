@@ -56,7 +56,11 @@ const companySchema = new mongoose.Schema({
       type: String,
       enum: ["active", "inactive"]
     }
-  }
-}, {timestamps: true})
+  },
+  admin_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  },
+}, { timestamps: true })
 
 export const Company = mongoose.model("Company", companySchema)

@@ -50,7 +50,7 @@ const officeSchema = new mongoose.Schema(
 
         working_days: {
             type: [Number],
-            default: [0, 1, 2, 3, 4]  // 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri
+            default: [1, 2, 3, 4, 5]  
         },
         
         admin_id: {
