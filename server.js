@@ -6,11 +6,16 @@ import companyRoutes from "./src/modules/company/company.routes.js"
 import officeRoutes from "./src/modules/office/office.routes.js"
 import userRoutes from "./src/modules/user/user.routes.js"
 import rideRoutes from "./src/modules/ride/ride.routes.js"
+import driverRoutes from "./src/modules/driver/driver.routes.js"
+import cookieParser from "cookie-parser";
+
+
 
 dotenv.config();
 
 const app = express();
 app.use(cors());
+app.use(cookieParser());
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -24,6 +29,8 @@ app.use("/api/office", officeRoutes)
 app.use("/api/user", userRoutes)
 
 app.use("/api/ride", rideRoutes) 
+
+app.use("/api/driver", driverRoutes)
 
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).json({
