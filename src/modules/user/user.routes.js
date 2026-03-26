@@ -1,7 +1,7 @@
 import { Router } from "express"
 import { createUser, getUserProfile, loginUser, logoutUser } from "./user.controller.js"
 import { body } from "express-validator"
-import { authMiddleware } from "../../middleware/auth.middleware.js"
+import { authUser } from "../../middleware/auth.middleware.js"
 
 const router = Router()
 
@@ -27,7 +27,8 @@ router.post('/login',
   loginUser
 )
 
-router.get('/profile' ,authMiddleware, getUserProfile)
+router.get('/profile' ,authUser, getUserProfile)
 
-router.get('/logout', authMiddleware, logoutUser)
+router.get('/logout', authUser, logoutUser)
+
 export default router

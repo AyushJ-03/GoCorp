@@ -1,6 +1,7 @@
 import express from "express";
-import { createDriver } from "./driver.controller.js";
+import { createDriver, loginDriver, getDriverProfile, logoutDriver } from "./driver.controller.js";
 import { body } from "express-validator";
+import { authDriver } from "../../middleware/auth.middleware.js";
 
 const router = express.Router();
 
@@ -22,6 +23,17 @@ router.post('/add-driver', [
 
 ], createDriver)
 
+router.post('/login',[
+
+  body('email').isEmail().withMessage('Valid email is required'),
+
+  body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
+
+], loginDriver)
+
+router.get('/profile', authDriver, getDriverProfile)
+
+router.get('/logout', authDriver, logoutDriver)
 
 
 export default router

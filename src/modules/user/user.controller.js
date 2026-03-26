@@ -44,7 +44,7 @@ export const createUser = async (req, res, next) => {
 
     res.status(201).json(new ApiResponse(201, "User registered successfully", { user, token }))
   } catch (error) {
-    next(error)
+    next(error || new ApiError(500, "Registration error"))
   }
 };
 
@@ -72,7 +72,7 @@ export const loginUser = async (req, res, next) => {
 
     res.status(200).json(new ApiResponse(200, "Login successful", { user, token }))
   } catch (error) {
-    next(error)
+    next(error || new ApiError(500, "Login error"))
   }
 };
 
@@ -80,7 +80,7 @@ export const getUserProfile = async (req, res, next) => {
   try {
     res.status(200).json(new ApiResponse(200, "User profile retrieved successfully", { user: req.user }))
   } catch (error) {
-    next(error)
+    next(error || new ApiError(500, "Profile retrieval error"))
   }
 };
 
@@ -99,6 +99,6 @@ export const logoutUser = async (req, res, next) => {
     res.status(200).json(new ApiResponse(200, "Logout successful"));
 
   } catch (error) {
-    next(error)
+    next(error || new ApiError(500, "Logout error"))
   }
 };
