@@ -5,11 +5,10 @@ import { DB } from "./src/config/db.js";
 import companyRoutes from "./src/modules/company/company.routes.js"
 import officeRoutes from "./src/modules/office/office.routes.js"
 import userRoutes from "./src/modules/user/user.routes.js"
-import rideRoutes from "./src/modules/ride/ride.routes.js"
+import rideRequestRoutes from "./src/modules/rideRequest/rideRequest.routes.js"
 import driverRoutes from "./src/modules/driver/driver.routes.js"
 import cookieParser from "cookie-parser";
-
-
+import rideProcessRoutes from "./src/modules/ride/rideProcess.routes.js";
 
 dotenv.config();
 
@@ -28,9 +27,11 @@ app.use("/api/office", officeRoutes)
 
 app.use("/api/user", userRoutes)
 
-app.use("/api/ride", rideRoutes) 
+app.use("/api/rideRequest", rideRequestRoutes) 
 
 app.use("/api/driver", driverRoutes)
+
+app.use("/api/rideProcess", rideProcessRoutes)
 
 app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).json({

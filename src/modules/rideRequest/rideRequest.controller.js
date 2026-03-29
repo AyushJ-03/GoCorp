@@ -1,4 +1,4 @@
-import { RideRequest } from "./ride.model.js"
+import { RideRequest } from "./rideRequest.model.js"
 import { Office } from "../office/office.model.js"
 import ApiResponse from "../../utils/ApiResponse.js"
 import ApiError from "../../utils/ApiError.js"
@@ -7,15 +7,21 @@ import {
   isDuplicateBooking,
   isLateRequest,
   isOneEndOffice
-} from "./ride.service.js"
+} from "./rideRequest.service.js"
+import { validationResult } from "express-validator"
 
 export const bookRide = async (req, res, next) => {
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    throw new ApiError(400, errors.array());
+  }
+
   try {
     const {
       employee_id,
       office_id,
-      direction,
-      schedule_type,
+      destination_type,
       scheduled_at,
       pickup_address,
       pickup_location,
@@ -48,21 +54,19 @@ export const bookRide = async (req, res, next) => {
     }
 
     // step 5 — check late request
-    if (isLateRequest(scheduled_at)) {
-      throw new ApiError(400, "Ride request must be made at least 30 minutes in advance")
-    }
+    const isLate = isLateRequest(scheduled_at);
 
     const ride = await RideRequest.create({
       employee_id,
       office_id,
-      direction,
-      schedule_type,
+      destination_type,
       scheduled_at,
       pickup_address,
       pickup_location,
       drop_address,
       drop_location,
-      solo_preference
+      solo_preference: isLate ? true : solo_preference, // Force solo if it's a late request
+      is_late_request: isLate
     })
 
     if (ride) {
@@ -71,7 +75,35 @@ export const bookRide = async (req, res, next) => {
       throw new ApiError(500, "Failed to book ride")
     }
 
-  } catch (e) {
-    next(e)
+  } catch (error) {
+    next(error || new ApiError(500, "Ride booking error"))
   }
 }
+
+import { getRoute } from "../../utils/osrm.js";
+
+export const getAllRideRequestsWithRoutes = async (req, res) => {
+  try {
+    const rides = await RideRequest.find();
+
+    const result = [];
+
+    for (let r of rides) {
+      const pickup = r.pickup_location.coordinates;
+      const drop = r.drop_location.coordinates;
+
+      const route = await getRoute(pickup, drop);
+
+      result.push({
+        _id: r._id,
+        pickup_location: r.pickup_location,
+        drop_location: r.drop_location,
+        route
+      });
+    }
+
+    res.json({ success: true, rides: result });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};

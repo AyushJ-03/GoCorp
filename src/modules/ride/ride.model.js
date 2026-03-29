@@ -1,107 +1,62 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
-const rideRequestSchema = new mongoose.Schema(
+const rideSchema = new mongoose.Schema(
   {
-    employee_id:
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true
-    },
-
-    office_id:
-    {
+    office_id: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Office",
       required: true
     },
 
-    direction:
-    {
-      type: String,
-      enum: ["PICKUP", "DROP"],
+    scheduled_at: {
+      type: Date,
       required: true
     },
 
-    // schedule_type:
-    // {
-    //   type: String,
-    //   enum: ["ONE_TIME", "DAILY", "WEEKDAYS", "CUSTOM_DAYS", "ADHOC"],
-    //   required: true,
-    // },
+    requests: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "RideRequest"
+      }
+    ],
 
-    scheduled_at: Date,
-    // end_time: String,
+    stops: [
+      {
+        type: {
+          type: String,
+          enum: ["pickup", "drop"]
+        },
 
-    // recurrence_days: [Number],
+        request_id: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "RideRequest"
+        },
 
-    pickup_address: String,
+        location: {
+          type: {
+            type: String,
+            enum: ["Point"],
+            default: "Point"
+          },
+          coordinates: [Number]
+        }
+      }
+    ],
 
-    pickup_location:
-    {
-      type: {
-        type: String,
-        enum: ["Point"], 
-        default: "Point"
-      },
-      coordinates: [Number],
+    route: {
+      geometry: [],
+      distance: Number,
+      duration: Number
     },
-
-    drop_address: String,
-
-    drop_location: 
-    {
-      type: 
-      { 
-        type: String, 
-        enum: ["Point"], 
-        default: "Point" 
-      },
-      coordinates: [Number],
-    },
-
-    solo_preference: 
-    { 
-      type: Boolean, 
-      default: false 
-    },
-
-    is_late_request: 
-    { 
-      type: Boolean, 
-      default: false 
-    },
-
-    status: 
-    {
+    status: {
       type: String,
-      enum: [
-        "PENDING",
-        "IN_CLUSTERING",
-        "CLUSTERED",
-        "BOOKED_SOLO",
-        "CANCELLED",
-        "COMPLETED",
-      ],
-      default: "PENDING",
-    },
-
-    parent_request_id: 
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "RideRequest"
-    },
-
-    cancelled_at: Date,
-    cancel_reason: String,
+      enum: ["PLANNED", "ONGOING", "COMPLETED"],
+      default: "PLANNED"
+    }
   },
   {
     timestamps: true
   }
 );
 
-rideRequestSchema.index({ employee_id: 1, status: 1 })
-rideRequestSchema.index({ office_id: 1, scheduled_at: 1, status: 1 })
-rideRequestSchema.index({ pickup_location: "2dsphere" });
-
-export const RideRequest = mongoose.model("RideRequest", rideRequestSchema)
+export const Ride = mongoose.model("Ride", rideSchema);

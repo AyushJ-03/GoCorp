@@ -5,6 +5,12 @@ import ApiResponse from "../../utils/ApiResponse.js";
 import { BlacklistToken } from "../user/blacklistToken.model.js";
 
 export const createDriver = async (req, res, next) => {
+  
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    throw new ApiError(400, "Validation errors", errors.array());
+  }
+
   try {
     const { name, email, contact, password, vehicle } = req.body;
 
@@ -15,11 +21,6 @@ export const createDriver = async (req, res, next) => {
     const isDriverExists = await Driver.findOne({ email });
     if (isDriverExists) {
       throw new ApiError(401, "Email already exists");
-    }
-
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      throw new ApiError(400, "Validation errors", errors.array());
     }
 
     const driver = await Driver.create({
