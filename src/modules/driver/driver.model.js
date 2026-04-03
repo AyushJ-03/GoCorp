@@ -12,7 +12,6 @@ const driverSchema = new mongoose.Schema({
     },
     last_name: {
       type: String,
-      minlength: [3, "Last name must be at least 3 characters long"]
     },
 
   },
@@ -64,9 +63,7 @@ const driverSchema = new mongoose.Schema({
       type: String,
       required: true,
       unique: true,
-      match: [/^[A-Z0-9-]+$/, "License plate must be alphanumeric and can include dashes"],
-      minlength: [5, "License plate must be at least 5 characters long"],
-      maxlength: [10, "License plate cannot exceed 10 characters"]
+      match: [/^[A-Z]{2}[ -]?[0-9]{2}[ -]?[A-Z]{1,2}[ -]?[0-9]{4}$/, "License plate must be alphanumeric and can include dashes"]
     },
     vehicleType: {
       type: String,

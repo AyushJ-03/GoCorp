@@ -1,8 +1,11 @@
 import ApiResponse from '../../utils/ApiResponse.js';
 import { validationResult } from 'express-validator';
 import { User } from './user.model.js';
+import { Office } from '../office/office.model.js';
+import { Company } from '../company/company.model.js';  
 import ApiError from '../../utils/ApiError.js';
 import { BlacklistToken } from './blacklistToken.model.js';
+import { RideRequest } from '../ride-request/rideRequest.model.js';
 
 export const createUser = async (req, res, next) => {
   try {
@@ -28,6 +31,16 @@ export const createUser = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       throw new ApiError(400, "Validation errors", errors.array());
+    }
+
+    const office = await Office.findById(office_id);
+    if (!office) {
+      throw new ApiError(404, "Office not found");
+    }
+
+    const company = await Company.findById(company_id);
+    if (!company) {
+      throw new ApiError(404, "Company not found");
     }
 
     const user = await User.create({
@@ -100,5 +113,90 @@ export const logoutUser = async (req, res, next) => {
 
   } catch (error) {
     next(error || new ApiError(500, "Logout error"))
+  }
+};
+
+export const updateUserProfile = async (req, res, next) => {
+  try {
+    const { name, contact, home_address, office_address, recent_locations, saved_locations } = req.body;
+    
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    // Update name fields individually to avoid overwriting nested fields
+    if (name?.first_name) user.name.first_name = name.first_name;
+    if (name?.last_name) user.name.last_name = name.last_name;
+
+    // Validate contact number format before saving
+    if (contact) {
+      if (!/^\d{10}$/.test(contact)) {
+        throw new ApiError(400, "Contact must be a valid 10-digit number");
+      }
+      user.contact = contact;
+    }
+
+    if (home_address) user.home_address = home_address;
+    if (office_address) user.office_address = office_address;
+    if (recent_locations) user.recent_locations = recent_locations;
+    if (saved_locations) user.saved_locations = saved_locations;
+
+    await user.save();
+
+    res.status(200).json(new ApiResponse(200, "Profile updated successfully", { user }));
+  } catch (error) {
+    next(error || new ApiError(500, "Profile update error"));
+  }
+};
+
+export const getMyRides = async (req, res, next) => {
+  try {
+    const rides = await RideRequest.find({
+      $or: [
+        { employee_id: req.user._id },
+        { invited_employee_ids: req.user._id }
+      ]
+    })
+      .sort({ scheduled_at: -1 })
+      .populate('employee_id', 'name contact')
+      .populate('office_id', 'name address')
+      .populate('invited_employee_ids', 'name contact');
+
+    res.status(200).json(new ApiResponse(200, 'My rides retrieved', {
+      count: rides.length,
+      rides
+    }));
+  } catch (error) {
+    next(error || new ApiError(500, 'Error fetching rides'));
+  }
+};
+
+export const searchUsers = async (req, res, next) => {
+  try {
+    const { query } = req.query;
+    
+    if (!query || query.length < 2) {
+      return res.status(200).json(new ApiResponse(200, "Query too short", []));
+    }
+
+    const searchRegex = new RegExp(query, 'i');
+
+    const users = await User.find({
+      company_id: req.user.company_id,
+      _id: { $ne: req.user._id },
+      $or: [
+        { "name.first_name": searchRegex },
+        { "name.last_name": searchRegex },
+        { email: searchRegex }
+      ]
+    })
+    .select('name email contact')
+    .limit(10);
+
+    res.status(200).json(new ApiResponse(200, "Users found", users));
+  } catch (error) {
+    next(error || new ApiError(500, "Error searching users"));
   }
 };

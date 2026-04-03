@@ -1,4 +1,4 @@
-import { RideRequest } from "../rideRequest/rideRequest.model.js";
+import { RideRequest } from "../ride-request/rideRequest.model.js";
 import { Ride } from "../ride/ride.model.js";
 import { clusterRequests } from "./clustering.service.js";
 import { buildRoute } from "./route.service.js";

@@ -54,7 +54,25 @@ const userSchema = new mongoose.Schema(
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User"
-    }
+    },
+    home_address: {
+      addr: String,
+      pos: [Number], // [lat, lng]
+    },
+    office_address: {
+      addr: String,
+      pos: [Number], // [lat, lng]
+    },
+    recent_locations: [{
+      addr: String,
+      pos: [Number],
+      last_used: { type: Date, default: Date.now }
+    }],
+    saved_locations: [{
+      name: String,
+      addr: String,
+      pos: [Number]
+    }]
   },
   {
     timestamps: true

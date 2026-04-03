@@ -66,6 +66,20 @@ const rideRequestSchema = new mongoose.Schema(
       default: false 
     },
 
+    invited_employee_ids:
+    {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+      validate: {
+        validator: function(v) {
+          // Ensure max 3 invited employees (plus requester = 4 total)
+          return v.length <= 3;
+        },
+        message: "Maximum 3 people can be invited (4 total including requester)"
+      }
+    },
+
     is_late_request: 
     { 
       type: Boolean, 
@@ -80,10 +94,18 @@ const rideRequestSchema = new mongoose.Schema(
         "IN_CLUSTERING",
         "CLUSTERED",
         "BOOKED_SOLO",
+        "ACCEPTED",
+        "ARRIVED",
+        "STARTED",
         "CANCELLED",
         "COMPLETED",
       ],
       default: "PENDING",
+    },
+
+    otp: {
+      type: String,
+      required: true,
     },
 
     parent_request_id: 
