@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { createUser, getUserProfile, loginUser, logoutUser, updateUserProfile, getMyRides, searchUsers } from "./user.controller.js"
+import { createUser, getUserProfile, loginUser, logoutUser, updateUserProfile, getMyRides, searchUsers, getUserSummary } from "./user.controller.js"
 import { body } from "express-validator"
 import { authUser } from "../../middleware/auth.middleware.js"
 
@@ -33,6 +33,8 @@ router.patch('/update-profile', authUser, updateUserProfile)
 router.get('/my-rides', authUser, getMyRides)
 
 router.get('/search', authUser, searchUsers)
+
+router.get('/summary', authUser, getUserSummary)
 
 router.get('/logout', authUser, logoutUser)
 

@@ -200,3 +200,29 @@ export const searchUsers = async (req, res, next) => {
     next(error || new ApiError(500, "Error searching users"));
   }
 };
+
+export const getUserSummary = async (req, res, next) => {
+  try {
+    const rideCount = await RideRequest.countDocuments({
+      $or: [
+        { employee_id: req.user._id },
+        { invited_employee_ids: req.user._id }
+      ]
+    });
+
+    const upcomingRides = await RideRequest.countDocuments({
+      $or: [
+        { employee_id: req.user._id },
+        { invited_employee_ids: req.user._id }
+      ],
+      status: { $in: ["PENDING", "IN_CLUSTERING", "CLUSTERED", "BOOKED_SOLO"] }
+    });
+
+    res.status(200).json(new ApiResponse(200, "User summary retrieved", { 
+      rideCount, 
+      upcomingRides 
+    }));
+  } catch (error) {
+    next(error || new ApiError(500, "Error fetching user summary"));
+  }
+};
