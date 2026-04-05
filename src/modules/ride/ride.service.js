@@ -1,4 +1,4 @@
-import { RideRequest } from "./rideRequest.model.js";
+import { RideRequest } from "./ride.model.js";
 import { getDistance } from "../../utils/geo.js";
 
 export const isWithinOfficeHours = (scheduledAt, office) => {

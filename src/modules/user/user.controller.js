@@ -5,7 +5,7 @@ import { Office } from '../office/office.model.js';
 import { Company } from '../company/company.model.js';  
 import ApiError from '../../utils/ApiError.js';
 import { BlacklistToken } from './blacklistToken.model.js';
-import { RideRequest } from '../ride-request/rideRequest.model.js';
+import { RideRequest } from '../ride/ride.model.js'; 
 
 export const createUser = async (req, res, next) => {
   try {
@@ -69,7 +69,7 @@ export const loginUser = async (req, res, next) => {
       throw new ApiError(401, "Email and password are required");
     }
 
-    const user = await User.findOne({ email }).select('+password');
+    const user = await User.findOne({ email }).select('+password').populate('office_id');
     if (!user) {
       throw new ApiError(401, "Invalid email or password");
     }
@@ -91,7 +91,8 @@ export const loginUser = async (req, res, next) => {
 
 export const getUserProfile = async (req, res, next) => {
   try {
-    res.status(200).json(new ApiResponse(200, "User profile retrieved successfully", { user: req.user }))
+    const user = await User.findById(req.user._id).populate('office_id');
+    res.status(200).json(new ApiResponse(200, "User profile retrieved successfully", { user: user }))
   } catch (error) {
     next(error || new ApiError(500, "Profile retrieval error"))
   }
@@ -144,6 +145,7 @@ export const updateUserProfile = async (req, res, next) => {
     if (saved_locations) user.saved_locations = saved_locations;
 
     await user.save();
+    await user.populate('office_id');
 
     res.status(200).json(new ApiResponse(200, "Profile updated successfully", { user }));
   } catch (error) {
@@ -164,9 +166,14 @@ export const getMyRides = async (req, res, next) => {
       .populate('office_id', 'name address')
       .populate('invited_employee_ids', 'name contact');
 
+    const activeStatuses = ["PENDING", "IN_CLUSTERING", "CLUSTERED", "BOOKED_SOLO", "ACCEPTED", "ARRIVED", "STARTED"];
+    
+    const active = rides.filter(ride => activeStatuses.includes(ride.status));
+    const past = rides.filter(ride => ["COMPLETED", "CANCELLED"].includes(ride.status));
+
     res.status(200).json(new ApiResponse(200, 'My rides retrieved', {
-      count: rides.length,
-      rides
+      active,
+      past
     }));
   } catch (error) {
     next(error || new ApiError(500, 'Error fetching rides'));

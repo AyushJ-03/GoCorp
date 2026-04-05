@@ -5,11 +5,10 @@ import { DB } from "./src/config/db.js";
 import companyRoutes from "./src/modules/company/company.routes.js";
 import officeRoutes from "./src/modules/office/office.routes.js";
 import userRoutes from "./src/modules/user/user.routes.js";
-import rideRequestRoutes from "./src/modules/ride-request/rideRequest.routes.js";
+import rideRequestRoutes from "./src/modules/ride/ride.routes.js";
 import driverRoutes from "./src/modules/driver/driver.routes.js";
 import mapsRoutes from "./src/modules/maps/maps.routes.js";
 import cookieParser from "cookie-parser";
-import rideProcessRoutes from "./src/modules/ride/rideProcess.routes.js";
 
 dotenv.config();
 
@@ -29,10 +28,9 @@ app.get("/api/health", (req, res) => {
 app.use("/api/company", companyRoutes);
 app.use("/api/office", officeRoutes);
 app.use("/api/user", userRoutes);
-app.use("/api/ride-request", rideRequestRoutes);
+app.use("/api/ride", rideRequestRoutes);
 app.use("/api/maps", mapsRoutes);
 app.use("/api/driver", driverRoutes);
-app.use("/api/rideProcess", rideProcessRoutes);
 
 app.use((req, res, next) => {
   console.log(`[404] Not Found: ${req.method} ${req.originalUrl}`);

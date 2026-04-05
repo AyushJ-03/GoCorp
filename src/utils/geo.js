@@ -1,3 +1,9 @@
+/**
+ * Calculate distance between two points using Haversine formula
+ * @param {[number, number]} point1 [lng, lat]
+ * @param {[number, number]} point2 [lng, lat]
+ * @returns {number} distance in meters
+ */
 export function getDistance([lng1, lat1], [lng2, lat2]) {
   const R = 6371e3;
 

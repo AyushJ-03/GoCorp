@@ -1,10 +1,8 @@
-import { Router } from "express";
-import { bookRide, getInvitedPeople, getRidesWithEmployeeInvite, getRideEmployeeGroup, cancelRide, getRideById } from "./rideRequest.controller.js";
+import express from "express"
+const router = express.Router();
 import { authUser } from "../../middleware/auth.middleware.js";
+import { bookRide, getClusters, getPendingRides, getInvitedPeople, getRidesWithEmployeeInvite, getRideEmployeeGroup, cancelRide, getRideById } from "./ride.controller.js";
 import { body, param, query } from "express-validator"
-import { getAllRideRequestsWithRoutes } from "./rideRequest.controller.js";
-
-const router = Router();
 
 router.post("/book-ride", [
 
@@ -18,6 +16,9 @@ router.post("/book-ride", [
 
   body('scheduled_at').notEmpty().withMessage('Scheduled time is required')
     .isISO8601().withMessage('Scheduled time must be a valid ISO 8601 date'),
+
+  body('destination_type').notEmpty().withMessage('Destination type is required')
+    .isIn(['OFFICE', 'HOME', 'OTHER']).withMessage('Invalid destination type'),
 
   body('invited_employee_ids')
     .optional()
@@ -47,15 +48,16 @@ router.get("/clustering/ride-employee-group/:ride_id", [
   param('ride_id').matches(/^[0-9a-fA-F]{24}$/).withMessage('Invalid ride ID format')
 ], getRideEmployeeGroup);
 
-router.get("/map", getAllRideRequestsWithRoutes);
+router.get("/:ride_id", [
+  param('ride_id').matches(/^[0-9a-fA-F]{24}$/).withMessage('Invalid ride ID format')
+], authUser, getRideById);
 
 // Cancel a ride (employee can only cancel PENDING/IN_CLUSTERING)
 router.patch("/cancel/:ride_id", [
   param('ride_id').matches(/^[0-9a-fA-F]{24}$/).withMessage('Invalid ride ID format')
 ], authUser, cancelRide);
 
-router.get("/:ride_id", [
-  param('ride_id').matches(/^[0-9a-fA-F]{24}$/).withMessage('Invalid ride ID format')
-], authUser, getRideById);
+router.get("/clusters", getClusters);
+router.get("/pending-rides", getPendingRides);
 
 export default router;
