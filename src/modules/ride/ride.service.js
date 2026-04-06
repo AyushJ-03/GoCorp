@@ -1,14 +1,16 @@
 import { RideRequest } from "./ride.model.js";
 import { getDistance } from "../../utils/geo.js";
 
-export const isWithinOfficeHours = (scheduledAt, office) => {
+export const isPastTime = (scheduledAt) => {
   const date = new Date(scheduledAt);
   const now = Date.now();
   
-  // Allow for 5-minute clock drift between client and server
-  if (date.getTime() < (now - 5 * 60 * 1000)) {
-    return false;
-  }
+  // Strict 1-minute buffer for clock drift/network latency
+  return date.getTime() < (now - 1 * 60 * 1000);
+};
+
+export const isWithinOfficeHours = (scheduledAt, office) => {
+  const date = new Date(scheduledAt);
 
   const scheduledDay = date.getDay();
 

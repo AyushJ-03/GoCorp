@@ -233,3 +233,26 @@ export const getUserSummary = async (req, res, next) => {
     next(error || new ApiError(500, "Error fetching user summary"));
   }
 };
+
+export const removeSavedLocation = async (req, res, next) => {
+  try {
+    const { addr } = req.body;
+    if (!addr) {
+      throw new ApiError(400, "Address is required");
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $pull: { saved_locations: { addr } } },
+      { new: true }
+    );
+
+    if (!user) {
+      throw new ApiError(404, "User not found");
+    }
+
+    res.status(200).json(new ApiResponse(200, "Location removed successfully", { user }));
+  } catch (error) {
+    next(error || new ApiError(500, "Error removing saved location"));
+  }
+};

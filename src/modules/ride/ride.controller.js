@@ -6,6 +6,7 @@ import {
   isWithinOfficeHours,
   isDuplicateBooking,
   isLateRequest,
+  isPastTime,
   isOneEndOffice,
   validateInvitedEmployees,
   getInvitedPeopleForRide,
@@ -49,6 +50,11 @@ export const bookRide = async (req, res, next) => {
     // step 1 — fetch office
     const office = await Office.findById(office_id);
     if (!office) throw new ApiError(404, "Office not found");
+
+    // step 1.5 — check if scheduled time is in the past
+    if (isPastTime(scheduled_at)) {
+      throw new ApiError(400, "Rides cannot be scheduled in the past");
+    }
 
     // step 2 — check office hours
     if (!isWithinOfficeHours(scheduled_at, office)) {
